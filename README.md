@@ -98,3 +98,13 @@ src/
   products.js
   styles.css
 ```
+
+## 8. To check if the posthog is initialised correctly
+```
+Run these in the browser console 
+posthog._loaded // should be true 
+posthog.config.token // should print your phc... token (not undefined) 
+posthog.config.api_host // should be https://us.i.posthog.com 
+posthog.has_opted_out_capturing() // should be false 
+posthog.capture('manual_test') // sends a test event
+```
