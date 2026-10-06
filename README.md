@@ -5,21 +5,26 @@ A small online lamp store used to demo PostHog's product analytics, session repl
 ## 1. Setup
 
 ```bash
-cp .env.example .env      # add your Project API key (and host if your project is in the EU)
+cp .env.example .env      # add your Project API Token (and host if your project is in the EU)
 npm install
 npm run dev               # http://localhost:3000
 ```
 
-| Variable | Value |
+|Set Variable Value |
 |---|---|
-| `VITE_POSTHOG_KEY` | Project API key (PostHog > Settings > Project) |
+| `VITE_POSTHOG_PROJECT_TOKEN` | Project API key (PostHog > Settings > Project) |
 | `VITE_POSTHOG_HOST` | `https://us.i.posthog.com` or `https://eu.i.posthog.com` |
+
+```bash
+VITE_POSTHOG_PROJECT_TOKEN= <your token from Project Settings> 
+VITE_POSTHOG_HOST=https://us.i.posthog.com
+```
 
 Restart `npm run dev` after editing `.env`. Use a browser profile with ad blockers off.
 
-## 2. PostHog configuration (one time)
+## 2. PostHog configuration (one time) in POstHog Project Settings
 
-1. **Session replay:** Settings > Session replay > turn on recording.
+1. **Session replay:** Project Settings > Session replay > turn on recording.
 2. **Feature flag:** create a flag with key `new-checkout-layout`. Start at 0% rollout.
 3. **Experiment:** create an experiment with flag key `checkout-button-test`, variants `control` and `test`, and the goal funnel `checkout_started` > `purchase_completed`. Launch it.
 
