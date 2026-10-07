@@ -76,6 +76,14 @@ The demo panel (bottom right) shows live flag values and lets you sign in as a p
 2. Open the experiment in PostHog and show exposures per variant and the conversion results from the seeded data.
 3. Explain significance and the "ship the winner" action.
 
+### E. Error tracking (3 min)
+1. In the app, open checkout, then use the demo panel buttons: **Uncaught error**, **Handled error**, **Crash page** (reload afterwards).
+2. In PostHog open **Error tracking** and show the errors grouped into issues, with stack traces.
+3. Open an issue and jump to the **session replay** of that user to see what they did before the error.
+4. Show the flag and experiment properties on the exception event to tie bugs to a variant.
+
+Stack traces are minified until you upload source maps. That is optional for a demo.
+
 ## 6. Troubleshooting
 
 | Problem | Fix |

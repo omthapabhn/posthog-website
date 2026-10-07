@@ -13,11 +13,10 @@ posthog.init(key, {
   api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com',
   autocapture: true,
   capture_pageview: false, // SPA: we send $pageview on route changes (see App.jsx)
+  capture_exceptions: true, // error tracking: uncaught errors + unhandled promise rejections
   capture_pageleave: true, // lets Web analytics compute bounce rate and session duration
   // session replay is switched on in PostHog project settings
 })
-
-window.posthog = posthog // for debugging in console
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <PostHogProvider client={posthog}>

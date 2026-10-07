@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { usePostHog, useFeatureFlagEnabled, useFeatureFlagVariantKey } from 'posthog-js/react'
+import { usePostHog, useFeatureFlagEnabled, useFeatureFlagVariantKey, PostHogErrorBoundary } from 'posthog-js/react'
 import { PRODUCTS } from './products.js'
 
 const FLAG_LAYOUT = 'new-checkout-layout'      // boolean feature flag
@@ -10,6 +10,7 @@ export default function App() {
   const posthog = usePostHog()
   const location = useLocation()
   const [cart, setCart] = useState([])
+  const [crash, setCrash] = useState(false)
   const total = cart.reduce((s, p) => s + p.price, 0)
 
   // SPA pageviews
@@ -22,15 +23,19 @@ export default function App() {
         <Link to="/cart">Cart ({cart.length})</Link>
       </header>
       <main>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/product/:id" element={<Product cart={cart} setCart={setCart} />} />
-          <Route path="/cart" element={<Cart cart={cart} total={total} />} />
-          <Route path="/checkout" element={<Checkout cart={cart} setCart={setCart} total={total} />} />
-          <Route path="/done" element={<Done />} />
-        </Routes>
+        {/* Catches render crashes and reports them to PostHog Error tracking */}
+        <PostHogErrorBoundary fallback={<CrashFallback />}>
+          <Bomb crash={crash} />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/product/:id" element={<Product cart={cart} setCart={setCart} />} />
+            <Route path="/cart" element={<Cart cart={cart} total={total} />} />
+            <Route path="/checkout" element={<Checkout cart={cart} setCart={setCart} total={total} />} />
+            <Route path="/done" element={<Done />} />
+          </Routes>
+        </PostHogErrorBoundary>
       </main>
-      <DevPanel />
+      <DevPanel setCrash={setCrash} />
     </>
   )
 }
@@ -153,7 +158,7 @@ function Done() {
   )
 }
 
-function DevPanel() {
+function DevPanel({ setCrash }) {
   const posthog = usePostHog()
   const layout = useFeatureFlagEnabled(FLAG_LAYOUT)
   const variant = useFeatureFlagVariantKey(FLAG_EXPERIMENT)
@@ -169,6 +174,27 @@ function DevPanel() {
       <button onClick={() => signIn('pro')}>Sign in (pro)</button>
       <button onClick={() => signIn('free')}>Sign in (free)</button>
       <button onClick={() => { posthog.reset(); window.location.href = '/' }}>Reset user</button>
+      <hr style={{ borderColor: '#33425a' }} />
+      <strong>Error tracking</strong><br />
+      <button onClick={() => setTimeout(() => { throw new Error('Uncaught demo error: checkout widget failed') }, 0)}>Uncaught error</button>
+      <button onClick={() => posthog.captureException(new Error('Handled demo error: payment declined'), { source: 'demo_panel' })}>Handled error</button>
+      <button onClick={() => setCrash(true)}>Crash page</button>
     </div>
+  )
+}
+
+// Throws during render when `crash` is true, so the error boundary has something to catch
+function Bomb({ crash }) {
+  if (crash) throw new Error('Render crash demo: component tree failed')
+  return null
+}
+
+function CrashFallback() {
+  return (
+    <>
+      <h1>Something went wrong.</h1>
+      <p className="sub">The error was reported. Reload to continue.</p>
+      <button onClick={() => { window.location.href = '/' }}>Reload store</button>
+    </>
   )
 }
